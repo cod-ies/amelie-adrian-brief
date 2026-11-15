@@ -10,252 +10,290 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Outfit:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper: #f4efe4;
-      --sheet: #fbf8f1;
-      --ink: #2c2d27;
-      --muted: #6b6a62;
-      --line: rgba(44, 45, 39, 0.14);
-      --bronze: #8a7348;
+      --paper: #f6f2e9;
+      --cream: #fcfaf5;
+      --ink: #2f3029;
+      --muted: #69695c;
+      --gold: #8a7348;
+      --line: #c8bea9;
       --wine: #7a2e36;
-      --wax-deep: #4e1820;
+      --soft: #ede8dc;
       --display: Fraunces, "Times New Roman", serif;
-      --ui: Outfit, sans-serif;
+      --ui: Outfit, "Helvetica Neue", sans-serif;
     }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
     html.reduce { scroll-behavior: auto; }
     body {
       margin: 0;
       background: var(--paper);
       color: var(--ink);
-      font-family: var(--ui);
-      font-size: 17px;
-      line-height: 1.55;
+      font: 15px/1.7 var(--ui);
     }
-    html:not(.is-read) body { overflow: hidden; height: 100svh; }
+    body.is-locked { overflow: hidden; height: 100svh; }
     button, input, textarea, select { font: inherit; color: inherit; }
-    a { color: inherit; }
-    :focus-visible { outline: 2px solid var(--wine); outline-offset: 3px; }
+    a { color: inherit; text-underline-offset: 5px; }
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+    [hidden] { display: none !important; }
     .skip {
       position: absolute;
-      left: 12px;
+      left: 18px;
       top: -80px;
       z-index: 40;
-      background: var(--ink);
-      color: var(--sheet);
-      padding: 8px 12px;
+      background: var(--cream);
+      padding: 10px 12px;
     }
-    .skip:focus { top: 12px; }
+    .skip:focus { top: 16px; }
 
     .gate {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: auto;
+      background: radial-gradient(circle at 50% 42%, #fff9ed 0, var(--paper) 65%, #e7dfcf 100%);
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+    }
+    .gate.is-dismissed { opacity: 0; visibility: hidden; pointer-events: none; }
+    .grain, .frame {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .grain {
+      opacity: 0.32;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.11' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .frame { inset: 16px; border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+    .gate-center {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 28px 18px 24px;
+      flex: 1;
+      min-height: 560px;
+      padding: 48px 18px 24px;
       text-align: center;
-      background:
-        radial-gradient(1200px 600px at 50% 0%, #fffaf0 0%, transparent 55%),
-        var(--paper);
-      transition: opacity 0.7s ease, visibility 0.7s ease;
     }
-    .gate::before {
-      content: "";
-      position: absolute;
-      inset: 16px;
-      border: 1px solid color-mix(in srgb, var(--bronze) 55%, transparent);
-      pointer-events: none;
+    .kicker {
+      margin: 0 0 12px;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
     }
-    html.is-read .gate {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    .place-line {
-      margin: 0;
-      color: var(--bronze);
-      font-family: var(--display);
-      font-style: italic;
-      font-size: 15px;
-    }
-    .place-line::before, .place-line::after { content: " · "; }
     .gate-title {
-      margin: 10px 0 8px;
+      margin: 0 0 72px;
       font-family: var(--display);
       font-weight: 400;
-      font-size: clamp(40px, 7vw, 62px);
-      line-height: 1.05;
+      font-size: clamp(36px, 5vw, 62px);
+      line-height: 1.12;
+      letter-spacing: -0.04em;
+      transition: opacity 0.25s ease, transform 0.25s ease;
     }
-    .gate-title em {
-      font-style: italic;
-      color: var(--wine);
-    }
-    .scene {
-      width: min(430px, 100%);
-      height: 420px;
-      position: relative;
-      margin-top: 4px;
-      perspective: 1400px;
-    }
+    .gate-title em { font-style: italic; color: var(--gold); }
+    .is-open .gate-title { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+
     .envelope {
-      position: absolute;
-      left: 50%;
-      bottom: 8px;
-      z-index: 2;
-      width: min(410px, 100%);
-      height: 252px;
-      translate: -50% 0;
-      overflow: hidden;
-      transform-style: preserve-3d;
-      box-shadow: 0 22px 36px rgba(60, 42, 24, 0.16);
+      position: relative;
+      width: min(410px, 78vw);
+      aspect-ratio: 1.55;
+      perspective: 1400px;
+      isolation: isolate;
+      box-shadow: 0 13px 18px -9px rgba(85, 70, 50, 0.22), 0 27px 44px -18px rgba(85, 70, 50, 0.2);
     }
-    html.is-open .envelope { overflow: visible; }
-    .back, .side-l, .side-r, .front, .flap-out {
+    .back, .sides, .front, .flap-out {
       position: absolute;
       inset: 0;
       background: url("paper.jpg") center / cover no-repeat;
     }
-    .lining {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, #d4c4a8, #c3b08e);
-      clip-path: polygon(8% 12%, 92% 12%, 50% 48%);
+    .flap-out {
+      background-image:
+        linear-gradient(170deg, rgba(255, 250, 245, 0.4), rgba(187, 164, 135, 0.18)),
+        url("paper.jpg");
     }
-    .card {
+    .front {
+      background-image:
+        linear-gradient(0deg, rgba(187, 164, 135, 0.16), transparent 42%),
+        url("paper.jpg");
+    }
+    .back { z-index: 0; }
+    .letter {
       position: absolute;
-      left: 8%;
-      right: 8%;
-      top: 18px;
-      z-index: 1;
-      padding: 22px 16px 36px;
-      background: var(--sheet);
-      border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+      top: 5%;
+      left: 6.5%;
+      right: 6.5%;
+      z-index: 2;
+      height: 93%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 22px 12px 18px;
+      background: linear-gradient(#fffdf5d9, #fffdf5d9), url("paper.jpg") center / 400px;
       text-align: center;
-      transform: translateY(72px);
-      transition: transform 1s cubic-bezier(0.22, 0.61, 0.36, 1);
+      visibility: hidden;
+      transform: none;
     }
-    html.is-open .card { transform: translateY(-118px); }
-    .card b {
+    .is-open .letter {
+      visibility: visible;
+      transform: translateY(-78%);
+      transition: visibility 0s 0.68s, transform 1.02s 0.98s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .letter small {
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .letter b {
       display: block;
-      margin-top: 8px;
+      margin: 12px 0 8px;
       font-family: var(--display);
       font-weight: 400;
-      font-size: clamp(26px, 5vw, 34px);
-      line-height: 1.05;
+      font-size: clamp(24px, 5vw, 32px);
+      letter-spacing: -0.05em;
     }
-    .card b span { color: var(--bronze); font-style: italic; }
-    .card small, .card i {
-      display: block;
-      color: var(--muted);
-      font-style: normal;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .card i {
-      margin-top: 14px;
-      color: var(--wine);
-      letter-spacing: 0.08em;
-      text-transform: none;
+    .letter b i { color: var(--gold); font-style: italic; font-weight: 400; }
+    .letter .invite-line {
+      margin-top: 16px;
       font-family: var(--display);
       font-style: italic;
-      font-size: 15px;
+      font-size: 14px;
+      color: var(--wine);
+      opacity: 0;
     }
-    .side-l { clip-path: polygon(0 0, 0 100%, 50% 42%); filter: brightness(0.95); z-index: 2; }
-    .side-r { clip-path: polygon(100% 0, 50% 42%, 100% 100%); filter: brightness(0.95); z-index: 2; }
+    .is-open .letter .invite-line { opacity: 1; transition: opacity 0.25s 1.7s linear; }
+    .sides { z-index: 3; pointer-events: none; background: none; }
+    .sides::before, .sides::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, rgba(255,255,255,.22), transparent), url("paper.jpg") center / cover;
+    }
+    .sides::before { clip-path: polygon(0 0, 54% 58%, 0 100%); }
+    .sides::after { clip-path: polygon(100% 0, 46% 58%, 100% 100%); }
     .front {
-      clip-path: polygon(0 100%, 50% 42%, 100% 100%);
-      filter: brightness(1.03);
-      z-index: 3;
+      z-index: 4;
+      clip-path: polygon(0 100%, 0 99%, 48% 44%, 50% 43%, 52% 44%, 100% 99%, 100% 100%);
+      pointer-events: none;
     }
     .flap {
       position: absolute;
-      inset: 0 0 auto;
-      height: 64%;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 65%;
       z-index: 5;
-      transform-origin: center top;
+      transform-origin: 50% 0;
       transform-style: preserve-3d;
-      transition: transform 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+      pointer-events: none;
+      transition: transform 0.85s 0.24s cubic-bezier(0.21, 0.61, 0.25, 1), z-index 0s 0.68s;
     }
-    html.is-open .place-line,
-    html.is-open .gate-title {
-      opacity: 0;
-      visibility: hidden;
-    }
-    html.is-open .flap {
-      transform: rotateX(186deg);
-      z-index: 0;
-      opacity: 0;
-      transition: transform 0.95s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.25s 0.55s linear;
-    }
+    .is-open .flap { transform: rotateX(-180deg); z-index: 1; }
     .flap-out, .flap-in {
       position: absolute;
       inset: 0;
-      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      clip-path: polygon(0 0, 100% 0, 52% 96.5%, 50% 98.5%, 48% 96.5%);
       backface-visibility: hidden;
     }
     .flap-in {
-      background: linear-gradient(180deg, #d8c9b0, #c4b294);
+      background: linear-gradient(#c2ae8f28, #f5e8d1), url("paper.jpg") center / cover;
       transform: rotateX(180deg);
     }
     .seal {
       position: absolute;
       left: 50%;
-      top: 46%;
+      top: 62%;
       z-index: 6;
-      width: 98px;
-      height: 98px;
+      width: 94px;
+      height: 94px;
+      margin: -47px 0 0 -47px;
       padding: 0;
       border: 0;
-      background: transparent;
+      background: none;
       cursor: pointer;
-      translate: -50% -18%;
-      transition: opacity 0.45s 0.12s ease, translate 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+      filter: drop-shadow(1px 4px 2px rgba(75, 37, 38, 0.28));
+      transition: transform 0.35s ease, opacity 0.35s ease;
     }
-    html.is-open .seal {
+    .is-open .seal {
+      transform: translateY(-13px) scale(1.04);
       opacity: 0;
       pointer-events: none;
-      translate: -50% -88%;
     }
-    .seal img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      filter: drop-shadow(0 10px 14px rgba(80, 20, 28, 0.32));
+    .seal img { width: 100%; height: 100%; display: block; }
+    .actions {
+      display: grid;
+      width: min(100%, 350px);
+      min-height: 54px;
+      margin-top: 28px;
     }
-    .tap {
-      margin: 18px 0 0;
-      color: var(--bronze);
-      font-size: 12px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+    .actions > * { grid-area: 1 / 1; }
+    .open-text {
+      border: 0;
+      border-bottom: 1px solid #aa9271;
+      background: transparent;
+      padding: 12px 2px 9px;
+      cursor: pointer;
+      transition: opacity 0.25s ease, transform 0.35s ease, visibility 0.25s;
     }
-    html.is-open .tap { opacity: 0; }
+    .is-open .open-text { opacity: 0; visibility: hidden; transform: translateY(-5px); pointer-events: none; }
     .continue {
-      margin-top: 16px;
-      padding: 12px 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 46px;
+      padding: 14px 22px;
       border: 0;
       background: #4a3b2a;
-      color: #f7f1e6;
+      color: #fffdf6;
       cursor: pointer;
       opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
       pointer-events: none;
-      transform: translateY(8px);
-      transition: opacity 0.45s 0.35s ease, transform 0.45s 0.35s ease;
+      transition: opacity 0.7s ease, transform 0.85s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0.7s;
     }
-    html.is-open .continue {
+    .is-ready .continue {
       opacity: 1;
-      pointer-events: auto;
+      visibility: visible;
       transform: none;
+      pointer-events: auto;
     }
-    .from { margin: 22px 0 0; color: var(--bronze); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
-    html.reduce .gate { display: none; }
+    .hint {
+      margin: 16px 0 0;
+      min-height: 18px;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      transition: opacity 0.3s ease;
+    }
+    .is-open:not(.is-ready) .hint { opacity: 0; }
+    .from {
+      position: relative;
+      z-index: 3;
+      padding: 22px;
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
 
-    .invite { display: none; }
-    html.is-read .invite, html.reduce .invite { display: block; }
+    .site { position: relative; }
+    .site::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1px solid var(--line);
+      pointer-events: none;
+      z-index: 12;
+    }
     .mast {
       position: sticky;
       top: 0;
@@ -263,377 +301,444 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 16px 22px;
+      gap: 20px;
+      min-height: 92px;
+      padding: 0 clamp(22px, 4vw, 64px);
       background: var(--paper);
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid transparent;
     }
-    .mono {
-      font-family: var(--display);
-      font-size: 28px;
+    .mast.is-stuck { border-bottom-color: var(--line); }
+    .mono { font-family: var(--display); font-size: 32px; text-decoration: none; letter-spacing: 1px; }
+    .mono span { color: var(--gold); font-style: italic; padding: 0 5px; }
+    .mast nav { display: flex; gap: 22px; flex-wrap: wrap; }
+    .mast nav a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      font-size: 11px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
       text-decoration: none;
     }
-    .mono span { color: var(--bronze); font-style: italic; }
-    .mast nav { display: flex; gap: 18px; flex-wrap: wrap; }
-    .mast nav a { text-decoration: none; font-size: 14px; color: var(--muted); }
-    .wrap { width: min(44rem, calc(100% - 36px)); margin: 0 auto; padding-bottom: 80px; }
-    .hero, .story, .day, .stay, .faq, .rsvp { scroll-margin-top: 84px; }
-    .hero { padding: 56px 0 12px; text-align: center; }
-    .kicker {
-      margin: 0;
-      color: var(--bronze);
-      font-size: 12px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+    .wrap { width: 100%; max-width: 1360px; margin: 0 auto; padding-inline: clamp(28px, 4.5vw, 64px); }
+    .eyebrow { margin: 0 0 16px; color: var(--gold); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.85s ease, transform 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    [data-reveal].is-in { opacity: 1; transform: none; }
+    html.reduce [data-reveal] { opacity: 1; transform: none; transition: none; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 40px;
+      align-items: center;
+      min-height: 700px;
+      padding: 28px 0 72px;
     }
     .hero h1 {
-      margin: 18px 0 10px;
+      margin: 0 0 8px;
       font-family: var(--display);
       font-weight: 400;
-      font-size: clamp(48px, 10vw, 84px);
-      line-height: 0.92;
+      font-size: clamp(52px, 7vw, 88px);
+      line-height: 0.95;
+      letter-spacing: -0.035em;
     }
-    .amp { color: var(--bronze); font-style: italic; padding: 0 0.08em; }
+    .hero h1 span { color: var(--gold); font-style: italic; }
     .rule {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin: 18px 0 22px;
-      color: var(--bronze);
+      gap: 14px;
+      width: 220px;
+      margin: 22px 0;
+      color: var(--gold);
     }
-    .rule::before, .rule::after {
-      content: "";
-      width: 64px;
-      height: 1px;
-      background: var(--bronze);
-      opacity: 0.55;
-    }
+    .rule::before, .rule::after { content: ""; height: 1px; flex: 1; background: var(--line); }
     .date-line {
       margin: 0;
       font-family: var(--display);
-      font-size: clamp(28px, 5vw, 40px);
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;
+      font-size: clamp(26px, 4vw, 34px);
+      letter-spacing: 0.1em;
     }
-    .where { margin: 10px 0 0; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-size: 13px; }
-    .lead {
-      max-width: 28rem;
-      margin: 22px auto 0;
-      font-family: var(--display);
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.35;
-    }
-    .until {
-      margin: 14px 0 0;
-      color: var(--wine);
-      font-family: var(--display);
-      font-size: 18px;
-    }
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 28px; }
+    .date-line span { color: var(--gold); }
+    .where { margin: 8px 0 0; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .lead { max-width: 22rem; margin: 22px 0; font-size: 16px; line-height: 1.9; color: var(--muted); }
+    .until { margin: 0 0 22px; font-family: var(--display); font-size: 20px; color: var(--wine); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
     .btn, .cal > button, .save, .choices button, .party-pick button {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 18px;
-      border: 1px solid var(--line);
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 12px 20px;
+      border: 1px solid var(--gold);
       background: transparent;
       text-decoration: none;
       cursor: pointer;
     }
     .btn, .save, .choices button.is-on, .party-pick button.is-on {
-      background: #4a3b2a;
-      color: #f7f1e6;
-      border-color: #4a3b2a;
+      background: var(--gold);
+      color: #fffdf7;
     }
     .cal { position: relative; }
     .cal menu {
       position: absolute;
       left: 0;
       top: calc(100% + 6px);
+      z-index: 9;
       margin: 0;
       padding: 8px;
-      min-width: 100%;
-      background: var(--sheet);
+      min-width: 240px;
+      background: var(--cream);
       border: 1px solid var(--line);
       display: none;
-      z-index: 4;
     }
-    .cal.is-open menu { display: grid; gap: 4px; }
-    .cal menu a { text-decoration: none; padding: 8px 10px; white-space: nowrap; }
-    .fine { color: var(--muted); font-size: 14px; }
-    .portrait {
-      width: min(34rem, 100%);
-      margin: 48px auto 0;
-      padding: 9px;
-      border: 1px solid var(--bronze);
-      box-shadow: inset 0 0 0 5px var(--paper), 0 0 0 1px var(--bronze);
+    .cal.is-open menu { display: grid; }
+    .cal menu a { text-decoration: none; padding: 10px 12px; }
+    .fine { color: var(--muted); font-size: 13px; }
+    .portrait-frame {
+      position: relative;
+      width: min(100%, 420px);
+      margin-inline: auto;
+      padding: 10px;
+      background: linear-gradient(115deg, #e4cf9e, #ba985e 28%, #e9d7ac 65%, #b18c4e);
+      border: 1px solid #ac894e;
+      box-shadow: inset 0 0 0 2px #f1e3c3, inset 0 0 0 4px #c0a36d, 0 16px 32px rgba(57, 40, 16, 0.12);
+      overflow: hidden;
     }
-    .portrait img {
-      width: 100%;
+    .portrait-frame img {
       display: block;
+      width: 100%;
       aspect-ratio: 4 / 5;
       object-fit: cover;
       object-position: center 28%;
+      will-change: transform;
     }
-    h2 {
-      margin: 64px 0 12px;
+
+    .story { padding: 24px 0 88px; text-align: center; }
+    .story h2, .day h2, .stay h2, .faq h2, .rsvp h2 {
+      margin: 8px 0 18px;
       font-family: var(--display);
       font-weight: 400;
-      font-size: clamp(32px, 6vw, 48px);
+      font-size: clamp(36px, 5vw, 56px);
       line-height: 1.12;
     }
-    h2 em { font-style: italic; color: var(--bronze); }
-    .story p, .day > p, .stay > p, .faq > p, .rsvp > p, .close p {
-      max-width: 38rem;
-      margin: 0 0 14px;
+    h2 em { display: block; font-style: italic; color: var(--gold); font-weight: 400; }
+    .story p { max-width: 36rem; margin: 0 auto 40px; color: var(--muted); }
+    .stations {
+      list-style: none;
+      margin: 0 auto;
+      padding: 0;
+      max-width: 760px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
     }
-    .beats { margin: 28px 0 0; padding: 0; list-style: none; display: grid; gap: 0; }
-    .beats li { padding: 16px 0; border-top: 1px solid var(--line); }
-    .beats strong { display: block; font-family: var(--display); font-size: 22px; font-weight: 400; }
+    .stations li { position: relative; padding: 28px 10px 0; }
+    .stations li::before {
+      content: "✦";
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0 10px;
+      background: var(--paper);
+      color: var(--gold);
+      font-size: 11px;
+    }
+    .stations strong { display: block; font-family: var(--display); font-size: clamp(20px, 2.4vw, 28px); font-weight: 400; }
+
+    .day { padding: 72px 0 48px; background: var(--soft); border-block: 1px solid var(--line); }
+    .day-head { text-align: center; max-width: 720px; margin: 0 auto 40px; }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
     .day-card {
-      background: var(--sheet);
-      border: 1px solid var(--line);
-      padding: 28px 26px 30px;
-      margin-top: 22px;
+      background: var(--cream);
+      border: 1px solid #d6cebe;
+      padding: 26px 24px 24px;
+      text-align: center;
     }
     .day-card header {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
-      color: var(--bronze);
-      font-size: 12px;
-      letter-spacing: 0.16em;
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
-    .mark { display: block; width: 140px; margin: 28px auto 8px; color: var(--bronze); }
-    .day-card h3 {
-      margin: 8px 0 18px;
-      text-align: center;
-      font-family: var(--display);
-      font-weight: 400;
-      font-size: 34px;
-    }
+    .mark { display: block; width: 140px; margin: 22px auto 8px; color: var(--gold); }
+    .day-card h3 { margin: 8px 0 18px; font-family: var(--display); font-weight: 400; font-size: 28px; }
     .slot {
       display: grid;
-      grid-template-columns: 6.2rem 1fr;
-      gap: 12px;
+      grid-template-columns: 5.4rem 1fr;
+      gap: 10px;
       padding: 12px 0;
-      border-top: 1px solid var(--line);
+      border-top: 1px solid #e4ded1;
+      text-align: left;
       align-items: baseline;
     }
-    .slot time {
-      font-family: var(--display);
-      font-size: 28px;
-      color: var(--bronze);
-      font-variant-numeric: tabular-nums;
-    }
-    .addr { margin: 16px 0 10px; color: var(--muted); text-align: center; }
-    .map {
-      display: block;
-      text-align: center;
-      color: var(--bronze);
-    }
-    .stay-grid { display: grid; gap: 18px; margin-top: 8px; }
-    @media (min-width: 760px) { .stay-grid { grid-template-columns: 1fr 1fr; } }
-    .stay article {
-      background: var(--sheet);
+    .slot time { font-family: var(--display); font-size: 24px; color: var(--gold); }
+    .addr { margin: 16px 0 10px; color: var(--muted); font-size: 13px; }
+    .map { color: var(--gold); text-decoration: none; font-size: 13px; }
+
+    .stay { padding: 88px 0 20px; }
+    .stay-head { text-align: center; margin-bottom: 32px; }
+    .hotels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .hotel {
+      background: var(--cream);
       border: 1px solid var(--line);
       padding: 22px;
+      outline: 1px solid var(--line);
+      outline-offset: -7px;
     }
-    .stay h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 400; font-size: 26px; }
-    .faq details { border-top: 1px solid var(--line); }
-    .faq summary {
-      padding: 16px 0;
-      cursor: pointer;
+    .hotel-photo {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 3 / 2;
+      margin-bottom: 22px;
+      background:
+        linear-gradient(180deg, rgba(47, 48, 41, 0.08), rgba(47, 48, 41, 0.28)),
+        url("paper.jpg") center / cover;
+      color: var(--gold);
       font-family: var(--display);
-      font-size: 22px;
-      list-style: none;
+      font-size: 64px;
+    }
+    .hotel h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 400; font-size: 28px; }
+
+    .faq { padding: 72px 0 20px; }
+    .faq-head { text-align: center; margin-bottom: 28px; }
+    .faq-list { max-width: 760px; margin: 0 auto; border-top: 1px solid var(--line); }
+    .faq details { border-bottom: 1px solid var(--line); }
+    .faq summary {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 16px;
+      padding: 18px 4px;
+      cursor: pointer;
+      list-style: none;
+      font-family: var(--display);
+      font-size: 22px;
     }
     .faq summary::-webkit-details-marker { display: none; }
-    .faq summary::after { content: "+"; color: var(--bronze); }
-    .faq details[open] summary::after { content: "–"; }
-    .faq details p { margin: 0; padding-bottom: 16px; }
+    .faq summary::after { content: "+"; color: var(--gold); transition: transform 0.2s; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details p { margin: 0; padding: 0 4px 20px; color: var(--muted); max-width: 38rem; }
+
+    .rsvp {
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      gap: clamp(32px, 5vw, 76px);
+      padding: 88px 0 40px;
+      align-items: start;
+    }
+    .rsvp-intro { position: sticky; top: 108px; }
+    .rsvp-card {
+      position: relative;
+      border: 1px solid var(--line);
+      background: rgba(252, 250, 245, 0.72);
+      padding: 32px;
+    }
+    .rsvp-card::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 1px solid #ddd5c5;
+      pointer-events: none;
+    }
     .choices, .party-pick { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
     label { display: block; margin-top: 16px; }
     input, textarea {
-      width: min(32rem, 100%);
+      width: 100%;
       margin-top: 6px;
-      padding: 8px 0;
-      border: 0;
-      border-bottom: 1px solid var(--line);
-      background: transparent;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--cream);
       font-family: var(--display);
-      font-size: 22px;
+      font-size: 20px;
     }
-    textarea { font-family: var(--ui); font-size: 16px; min-height: 72px; resize: vertical; }
+    textarea { font-family: var(--ui); font-size: 15px; min-height: 72px; resize: vertical; }
     .stepper { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
-    .stepper button { width: 40px; height: 40px; border: 1px solid var(--line); background: var(--sheet); cursor: pointer; }
+    .stepper button { width: 44px; height: 44px; border: 1px solid var(--line); background: var(--cream); cursor: pointer; }
     .stepper b { min-width: 1.2rem; font-variant-numeric: lining-nums; }
     .names input { display: block; }
     .party[hidden] { display: none; }
-    .result {
-      margin-top: 20px;
-      font-family: var(--display);
-      font-size: 26px;
-      line-height: 1.3;
+    .result { margin-top: 18px; font-family: var(--display); font-size: 24px; line-height: 1.3; }
+    .close { text-align: center; padding: 28px 0 72px; }
+    .close p:first-child { font-family: var(--display); font-style: italic; font-size: 32px; }
+
+    @media (max-width: 900px) {
+      .hero, .rsvp, .grid-3, .hotels, .stations { grid-template-columns: 1fr; }
+      .hero { min-height: 0; text-align: center; padding-top: 24px; }
+      .rule, .lead, .until { margin-inline: auto; }
+      .hero-actions { justify-content: center; }
+      .rsvp-intro { position: static; text-align: center; }
+      .day-card { max-width: 480px; margin-inline: auto; }
+      .gate-center { min-height: 460px; padding-top: 36px; }
+      .gate-title { margin-bottom: 48px; font-size: clamp(30px, 8vw, 42px); }
+      .envelope { width: min(350px, 84vw); }
+      .seal { width: 80px; height: 80px; margin: -40px 0 0 -40px; }
     }
-    .close { padding-top: 36px; border-top: 1px solid var(--line); margin-top: 48px; text-align: center; }
-    .close p:first-child { font-family: var(--display); font-style: italic; font-size: 24px; }
-    @media (max-width: 640px) {
-      .scene { height: 320px; }
-      .envelope { height: 210px; }
-      .seal { width: 82px; height: 82px; }
-      .hero { padding-top: 36px; }
-      .mast { padding: 12px 16px; }
-      .mono { font-size: 22px; }
+    @media (prefers-reduced-motion: reduce) {
+      .gate, .gate-title, .letter, .flap, .seal, .open-text, .continue, .hint, [data-reveal] {
+        transition: none !important;
+      }
     }
   </style>
   <script>if (matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("reduce");</script>
 </head>
-<body>
+<body class="is-locked">
   <a class="skip" href="#antwort">Zur Antwort</a>
 
-  <section class="gate" aria-label="Siegel">
-    <p class="place-line">An der Blütenwand</p>
-    <h1 class="gate-title">Ein Brief <em>für euch.</em></h1>
-    <div class="scene">
+  <section class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="frame" aria-hidden="true"></div>
+    <div class="gate-center">
+      <p class="kicker">An der Blütenwand</p>
+      <h1 class="gate-title" id="gate-title">Ein Brief <em>für euch.</em></h1>
       <div class="envelope">
-        <div class="back"></div>
-        <div class="lining"></div>
-        <article class="card">
+        <div class="back" aria-hidden="true"></div>
+        <article class="letter">
           <small>Die Hochzeit von</small>
-          <b>Amelie <span>&amp;</span> Adrian</b>
+          <b>Amelie <i>&amp;</i> Adrian</b>
           <small>6. September 2027 · Berlin</small>
-          <i>Ihr seid eingeladen</i>
+          <span class="invite-line">Ihr seid eingeladen</span>
         </article>
-        <div class="side-l"></div>
-        <div class="side-r"></div>
-        <div class="front"></div>
-        <div class="flap">
+        <div class="sides" aria-hidden="true"></div>
+        <div class="front" aria-hidden="true"></div>
+        <div class="flap" aria-hidden="true">
           <span class="flap-out"></span>
           <span class="flap-in"></span>
         </div>
         <button class="seal" type="button" aria-expanded="false" aria-label="Öffnet das Siegel">
-          <img src="seal.png" width="98" height="98" alt="">
+          <img src="seal.png" width="94" height="94" alt="">
         </button>
       </div>
+      <div class="actions">
+        <button class="open-text" type="button">Einladung öffnen</button>
+        <button class="continue" type="button" disabled tabindex="-1" aria-hidden="true">Den Brief lesen →</button>
+      </div>
+      <p class="hint" role="status">Tippt auf das Siegel</p>
     </div>
-    <p class="tap" role="status">Tippt auf das Siegel</p>
-    <button class="continue" type="button">Den Brief lesen →</button>
     <p class="from">Amelie und Adrian</p>
   </section>
 
-  <div class="invite" id="invite">
+  <div class="site">
     <header class="mast">
-      <a class="mono" href="#anfang">A <span>&amp;</span> A</a>
+      <a class="mono" href="#anfang">A<span>&amp;</span>A</a>
       <nav aria-label="Auf der Einladung">
         <a href="#tag">Der Tag</a>
         <a href="#bleiben">Bleiben</a>
         <a href="#antwort">Antwort</a>
       </nav>
     </header>
-    <main class="wrap">
-      <header class="hero" id="anfang">
-        <p class="kicker">Der Garten öffnet sich</p>
-        <h1>Amelie <span class="amp">&amp;</span> Adrian</h1>
-        <p class="rule" aria-hidden="true">✦</p>
-        <p class="date-line">06 / 09 / 2027</p>
-        <p class="where">Botanischer Garten, Berlin</p>
-        <p class="lead">Die Blütenwand ist nur der Hintergrund. Ihr seid der Grund.</p>
-        <p class="until" data-until>Berliner Zeit.</p>
-        <div class="actions">
-          <a class="btn" href="#antwort">Zur Antwort →</a>
-          <div class="cal">
-            <button type="button" aria-expanded="false" aria-haspopup="true">In den Kalender</button>
-            <menu>
-              <a id="google" href="#">Google-Kalender</a>
-              <a id="ics" href="#">Kalenderdatei laden</a>
-            </menu>
+
+    <main>
+      <header class="hero wrap" id="anfang">
+        <div class="hero-copy">
+          <p class="eyebrow">Der Garten öffnet sich</p>
+          <h1>Amelie <span>&amp;</span> Adrian</h1>
+          <p class="rule" aria-hidden="true">✦</p>
+          <p class="date-line">06 <span>/</span> 09 <span>/</span> 2027</p>
+          <p class="where">Botanischer Garten, Berlin</p>
+          <p class="lead">Die Blütenwand ist nur der Hintergrund. Ihr seid der Grund.</p>
+          <p class="until" data-until>Berliner Zeit.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#antwort">Zur Antwort →</a>
+            <div class="cal">
+              <button type="button" aria-expanded="false" aria-haspopup="true">In den Kalender</button>
+              <menu>
+                <a id="google" href="#">Google-Kalender</a>
+                <a id="ics" href="#">Kalenderdatei laden</a>
+              </menu>
+            </div>
           </div>
+          <p class="fine">Zeiten in Berlin. Die Orte sind ein Beispiel, keine Buchung.</p>
         </div>
-        <p class="fine">Zeiten in Berlin. Die Orte sind ein Beispiel, keine Buchung.</p>
-        <figure class="portrait">
+        <figure class="portrait-frame">
           <img src="couple.jpg" width="800" height="1000" alt="Amelie und Adrian vor der Blütenwand">
         </figure>
       </header>
 
-      <section class="story" id="geschichte" aria-labelledby="story-title">
-        <p class="kicker">Wie es anfing</p>
-        <h2 id="story-title">Von der Blütenwand <em>in den Garten.</em></h2>
-        <p>Amelie und Adrian sind an einer Blütenwand stehen geblieben, weil keiner von beiden weiterwollte. Aus dem Nachmittag wurde ein Jahr in derselben Stadt. Am 6. September öffnen sie den Garten, und ihr seid darin.</p>
-        <ul class="beats">
-          <li><strong>Die Blütenwand</strong> Dort sind sie stehen geblieben.</li>
-          <li><strong>Ein Jahr, eine Stadt</strong> Der Weg dazwischen war kurz und dann selbstverständlich.</li>
-          <li><strong>Der Garten</strong> Hier sagt ihr ja, und hier bleibt ihr zum Essen.</li>
+      <section class="story wrap" id="geschichte" aria-labelledby="story-title">
+        <div data-reveal>
+          <p class="eyebrow">Wie es anfing</p>
+          <h2 id="story-title">Von der Blütenwand <em>in den Garten.</em></h2>
+          <p>Amelie und Adrian sind an einer Blütenwand stehen geblieben, weil keiner von beiden weiterwollte. Aus dem Nachmittag wurde ein Jahr in derselben Stadt. Am 6. September öffnen sie den Garten, und ihr seid darin.</p>
+        </div>
+        <ul class="stations">
+          <li data-reveal><strong>Die Blütenwand</strong><span>Dort sind sie stehen geblieben.</span></li>
+          <li data-reveal><strong>Ein Jahr, eine Stadt</strong><span>Dann war der Weg selbstverständlich.</span></li>
+          <li data-reveal><strong>Der Garten</strong><span>Hier sagt ihr ja.</span></li>
         </ul>
       </section>
 
       <section class="day" id="tag" aria-labelledby="day-title">
-        <p class="kicker">Montag · 6. September 2027</p>
-        <h2 id="day-title">Der Tag, in dieser Reihenfolge. <em>Ein Nachmittag im Garten.</em></h2>
-        <p>Von der Trauung bis zum letzten Glas. Alle Zeiten sind Berliner Zeit.</p>
-
-        <article class="day-card">
-          <header><span>01</span><span>Die Trauung</span></header>
-          <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-            <path d="M18 72h124M28 72V38l52-22 52 22v34"/>
-            <path d="M52 72V48h24v24M84 72V42h28v30"/>
-            <path d="M40 48h80M40 56h80"/>
-            <circle cx="80" cy="28" r="3"/>
-          </svg>
-          <h3>Botanischer Garten</h3>
-          <div class="slot"><time datetime="2027-09-06T15:00+02:00">15:00</time><span>Ankommen</span></div>
-          <div class="slot"><time datetime="2027-09-06T15:30+02:00">15:30</time><span>Trauung an der Blütenwand</span></div>
-          <p class="addr">Königin-Luise-Straße 6–8, 14195 Berlin</p>
-          <a class="map" href="https://www.google.com/maps/search/?api=1&query=Botanischer+Garten+Berlin+Königin-Luise-Straße+6-8">Auf der Karte</a>
-        </article>
-
-        <article class="day-card">
-          <header><span>02</span><span>Dazwischen</span></header>
-          <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-            <path d="M20 70c12-22 20-22 32 0 12-22 20-22 32 0 12-22 20-22 32 0 12-22 20-22 24 0"/>
-            <path d="M18 74h124"/>
-            <path d="M48 48c0-10 8-16 16-10M96 44c0-12 10-16 16-8"/>
-          </svg>
-          <h3>Zwischen den Beeten</h3>
-          <div class="slot"><time datetime="2027-09-06T16:45+02:00">16:45</time><span>Ein Glas im Garten</span></div>
-          <p class="addr">Ihr bleibt im Garten. Flache Schuhe, der Kies ist ehrlich.</p>
-        </article>
-
-        <article class="day-card">
-          <header><span>03</span><span>Der Abend</span></header>
-          <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-            <path d="M28 70V38h104v32"/>
-            <path d="M28 38c20-14 84-14 104 0"/>
-            <path d="M52 70V50h24v20M92 70V50h24v20"/>
-            <path d="M20 70h120"/>
-          </svg>
-          <h3>Café Einstein Stammhaus</h3>
-          <div class="slot"><time datetime="2027-09-06T19:00+02:00">19:00</time><span>Essen</span></div>
-          <div class="slot"><time datetime="2027-09-06T21:30+02:00">21:30</time><span>Tanzen, bis die Schuhe egal sind</span></div>
-          <p class="addr">Kurfürstenstraße 58, 10785 Berlin</p>
-          <a class="map" href="https://www.google.com/maps/search/?api=1&query=Café+Einstein+Stammhaus+Kurfürstenstraße+58+Berlin">Auf der Karte</a>
-        </article>
+        <div class="wrap">
+          <div class="day-head" data-reveal>
+            <p class="eyebrow">Montag · 6. September 2027</p>
+            <h2 id="day-title">Der Tag, in dieser Reihenfolge. <em>Ein Nachmittag im Garten.</em></h2>
+            <p>Von der Trauung bis zum letzten Glas. Alle Zeiten sind Berliner Zeit.</p>
+          </div>
+          <div class="grid-3">
+            <article class="day-card" data-reveal>
+              <header><span>01</span><span>Die Trauung</span></header>
+              <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                <path d="M18 72h124M28 72V38l52-22 52 22v34"/><path d="M52 72V48h24v24M84 72V42h28v30"/><path d="M40 48h80M40 56h80"/><circle cx="80" cy="28" r="3"/>
+              </svg>
+              <h3>Botanischer Garten</h3>
+              <div class="slot"><time datetime="2027-09-06T15:00+02:00">15:00</time><span>Ankommen</span></div>
+              <div class="slot"><time datetime="2027-09-06T15:30+02:00">15:30</time><span>Trauung an der Blütenwand</span></div>
+              <p class="addr">Königin-Luise-Straße 6–8, 14195 Berlin</p>
+              <a class="map" href="https://www.google.com/maps/search/?api=1&query=Botanischer+Garten+Berlin+Königin-Luise-Straße+6-8">Auf der Karte</a>
+            </article>
+            <article class="day-card" data-reveal>
+              <header><span>02</span><span>Dazwischen</span></header>
+              <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                <path d="M20 70c12-22 20-22 32 0 12-22 20-22 32 0 12-22 20-22 32 0 12-22 20-22 24 0"/><path d="M18 74h124"/>
+              </svg>
+              <h3>Zwischen den Beeten</h3>
+              <div class="slot"><time datetime="2027-09-06T16:45+02:00">16:45</time><span>Ein Glas im Garten</span></div>
+              <p class="addr">Ihr bleibt im Garten. Flache Schuhe, der Kies ist ehrlich.</p>
+            </article>
+            <article class="day-card" data-reveal>
+              <header><span>03</span><span>Der Abend</span></header>
+              <svg class="mark" viewBox="0 0 160 90" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+                <path d="M28 70V38h104v32"/><path d="M28 38c20-14 84-14 104 0"/><path d="M52 70V50h24v20M92 70V50h24v20"/><path d="M20 70h120"/>
+              </svg>
+              <h3>Café Einstein Stammhaus</h3>
+              <div class="slot"><time datetime="2027-09-06T19:00+02:00">19:00</time><span>Essen</span></div>
+              <div class="slot"><time datetime="2027-09-06T21:30+02:00">21:30</time><span>Tanzen</span></div>
+              <p class="addr">Kurfürstenstraße 58, 10785 Berlin</p>
+              <a class="map" href="https://www.google.com/maps/search/?api=1&query=Café+Einstein+Stammhaus+Kurfürstenstraße+58+Berlin">Auf der Karte</a>
+            </article>
+          </div>
+        </div>
       </section>
 
-      <section class="stay" id="bleiben" aria-labelledby="stay-title">
-        <p class="kicker">Wenn ihr über Nacht bleibt</p>
-        <h2 id="stay-title">Wo ihr schlafen könnt</h2>
-        <p>Zwei Häuser zwischen Garten und Abendessen. Wir nehmen keine Buchung entgegen.</p>
-        <div class="stay-grid">
-          <article>
-            <p class="kicker">Nah an der Bahn</p>
+      <section class="stay wrap" id="bleiben" aria-labelledby="stay-title">
+        <div class="stay-head" data-reveal>
+          <p class="eyebrow">Wenn ihr über Nacht bleibt</p>
+          <h2 id="stay-title">Wo ihr schlafen könnt</h2>
+          <p class="fine">Zwei Häuser zwischen Garten und Abendessen. Wir nehmen keine Buchung entgegen.</p>
+        </div>
+        <div class="hotels">
+          <article class="hotel" data-reveal>
+            <div class="hotel-photo" aria-hidden="true">45</div>
+            <p class="eyebrow">Nah an der Bahn</p>
             <h3>Hotel Palace Berlin</h3>
             <p>Budapester Straße 45, 10787 Berlin. Wenn ihr vom Garten in die Stadt fahrt, seid ihr nah an der Bahn.</p>
             <a class="map" href="https://www.google.com/maps/search/?api=1&query=Hotel+Palace+Berlin+Budapester+Straße+45">Auf der Karte</a>
           </article>
-          <article>
-            <p class="kicker">Nah am Essen</p>
+          <article class="hotel" data-reveal>
+            <div class="hotel-photo" aria-hidden="true">17</div>
+            <p class="eyebrow">Nah am Essen</p>
             <h3>Hotel Berlin, Lützowplatz</h3>
             <p>Lützowplatz 17, 10785 Berlin. Ein kurzer Weg zum Abend.</p>
             <a class="map" href="https://www.google.com/maps/search/?api=1&query=Hotel+Berlin+Lützowplatz+17">Auf der Karte</a>
@@ -641,63 +746,71 @@
         </div>
       </section>
 
-      <section class="faq" id="vorher" aria-labelledby="faq-title">
-        <p class="kicker">Gut zu wissen</p>
-        <h2 id="faq-title">Bevor ihr kommt</h2>
-        <details>
-          <summary>Was zieht ihr an?</summary>
-          <p>Festlich, und eine Schicht für den Abend im Garten. Die Schuhe sollen den Kies können.</p>
-        </details>
-        <details>
-          <summary>Kommen Kinder mit?</summary>
-          <p>Ja, wenn ihr sie mit Namen eintragt. Gezählt wird, wer einen Namen hat.</p>
-        </details>
-        <details>
-          <summary>Wie kommt ihr vom Garten zum Essen?</summary>
-          <p>Mit der S-Bahn von Botanischer Garten Richtung Stadt, dann ein kurzes Stück zu Fuß zur Kurfürstenstraße. Wer lieber zusammen fährt, trifft sich um 18:15 am Garteneingang.</p>
-        </details>
-        <details>
-          <summary>Was schenkt ihr?</summary>
-          <p>Dass ihr da seid, reicht. Wenn ihr mehr geben wollt, freuen wir uns über etwas für den ersten gemeinsamen Tisch. Es gibt hier keine Zahlung.</p>
-        </details>
+      <section class="faq wrap" id="vorher" aria-labelledby="faq-title">
+        <div class="faq-head" data-reveal>
+          <p class="eyebrow">Gut zu wissen</p>
+          <h2 id="faq-title">Bevor ihr kommt</h2>
+        </div>
+        <div class="faq-list" data-reveal>
+          <details>
+            <summary>Was zieht ihr an?</summary>
+            <p>Festlich, und eine Schicht für den Abend im Garten. Die Schuhe sollen den Kies können.</p>
+          </details>
+          <details>
+            <summary>Kommen Kinder mit?</summary>
+            <p>Ja, wenn ihr sie mit Namen eintragt. Gezählt wird, wer einen Namen hat.</p>
+          </details>
+          <details>
+            <summary>Wie kommt ihr vom Garten zum Essen?</summary>
+            <p>Mit der S-Bahn von Botanischer Garten Richtung Stadt, dann ein kurzes Stück zu Fuß zur Kurfürstenstraße. Wer lieber zusammen fährt, trifft sich um 18:15 am Garteneingang.</p>
+          </details>
+          <details>
+            <summary>Was schenkt ihr?</summary>
+            <p>Dass ihr da seid, reicht. Wenn ihr mehr geben wollt, freuen wir uns über etwas für den ersten gemeinsamen Tisch. Es gibt hier keine Zahlung.</p>
+          </details>
+        </div>
       </section>
 
-      <section class="rsvp" id="antwort" aria-labelledby="rsvp-title">
-        <p class="kicker">Wir hoffen, ihr kommt</p>
-        <h2 id="rsvp-title">Ein Platz am Tisch.</h2>
-        <p>Schreibt, wer kommt. Die Antwort bleibt auf diesem Gerät. Es geht keine E-Mail raus.</p>
-        <label>Euer Name
-          <input id="guest" name="guest" autocomplete="name" maxlength="60" required>
-        </label>
-        <div class="choices">
-          <button type="button" data-answer="yes">Wir kommen</button>
-          <button type="button" data-answer="no">Wir können nicht</button>
+      <section class="rsvp wrap" id="antwort" aria-labelledby="rsvp-title">
+        <div class="rsvp-intro" data-reveal>
+          <p class="eyebrow">Wir hoffen, ihr kommt</p>
+          <h2 id="rsvp-title">Ein Platz am Tisch.</h2>
+          <p>Schreibt, wer kommt. Die Antwort bleibt auf diesem Gerät. Es geht keine E-Mail raus.</p>
         </div>
-        <div class="party" hidden>
-          <p>Wie viele Personen kommen, euch eingeschlossen?</p>
-          <div class="party-pick">
-            <button type="button" data-party="1">Nur ich</button>
-            <button type="button" data-party="2">Zu zweit</button>
-          </div>
-          <div class="stepper">
-            <button type="button" data-step="-1" aria-label="Eine Person weniger">−</button>
-            <b data-amount>1</b>
-            <button type="button" data-step="1" aria-label="Eine Person mehr">+</button>
-          </div>
-          <div class="names"></div>
-          <label>Essen, Unverträglichkeiten
-            <textarea id="meal" maxlength="400" placeholder="Name und was die Person braucht"></textarea>
+        <div class="rsvp-card" data-reveal>
+          <label>Euer Name
+            <input id="guest" name="guest" autocomplete="name" maxlength="60" required>
           </label>
+          <div class="choices">
+            <button type="button" data-answer="yes">Wir kommen</button>
+            <button type="button" data-answer="no">Wir können nicht</button>
+          </div>
+          <div class="party" hidden>
+            <p>Wie viele Personen kommen, euch eingeschlossen?</p>
+            <div class="party-pick">
+              <button type="button" data-party="1">Nur ich</button>
+              <button type="button" data-party="2">Zu zweit</button>
+            </div>
+            <div class="stepper">
+              <button type="button" data-step="-1" aria-label="Eine Person weniger">−</button>
+              <b data-amount>1</b>
+              <button type="button" data-step="1" aria-label="Eine Person mehr">+</button>
+            </div>
+            <div class="names"></div>
+            <label>Essen, Unverträglichkeiten
+              <textarea id="meal" maxlength="400" placeholder="Name und was die Person braucht"></textarea>
+            </label>
+          </div>
+          <label>Eine Zeile an uns
+            <textarea id="note" maxlength="400"></textarea>
+          </label>
+          <p><button class="save" type="button">Antwort merken</button></p>
+          <p class="result" aria-live="polite">Noch keine Antwort.</p>
+          <p class="fine">Namen, Tag und Ort sind ein Beispiel.</p>
         </div>
-        <label>Eine Zeile an uns
-          <textarea id="note" maxlength="400"></textarea>
-        </label>
-        <p><button class="save" type="button">Antwort merken</button></p>
-        <p class="result" aria-live="polite">Noch keine Antwort.</p>
-        <p class="fine">Namen, Tag und Ort sind ein Beispiel.</p>
       </section>
 
-      <footer class="close">
+      <footer class="close wrap" data-reveal>
         <p>Bis zum 6. September im Garten.</p>
         <p class="fine">Amelie und Adrian · Berlin</p>
       </footer>
@@ -707,23 +820,85 @@
   <script>
     (function () {
       var root = document.documentElement;
+      var gate = document.getElementById("gate");
       var seal = document.querySelector(".seal");
+      var openText = document.querySelector(".open-text");
       var go = document.querySelector(".continue");
+      var hint = document.querySelector(".hint");
+      var mast = document.querySelector(".mast");
+      var photo = document.querySelector(".portrait-frame img");
       var reduce = root.classList.contains("reduce");
       var key = "feierlink-rsvp:/amelie-adrian-brief/";
+      var opened = false;
+      var readyTimer;
 
       function openSeal() {
-        if (root.classList.contains("is-open")) return;
-        root.classList.add("is-open");
+        if (opened) return;
+        opened = true;
+        gate.classList.add("is-open");
         seal.setAttribute("aria-expanded", "true");
+        seal.disabled = true;
+        openText.disabled = true;
+        readyTimer = setTimeout(function () {
+          gate.classList.add("is-ready");
+          go.disabled = false;
+          go.removeAttribute("aria-hidden");
+          go.removeAttribute("tabindex");
+          hint.textContent = "Ihr seid eingeladen";
+        }, reduce ? 0 : 1750);
       }
       function readLetter() {
-        root.classList.add("is-open", "is-read");
-        seal.setAttribute("aria-expanded", "true");
+        clearTimeout(readyTimer);
+        gate.classList.add("is-open", "is-ready", "is-dismissed");
+        document.body.classList.remove("is-locked");
+        setTimeout(function () { gate.style.display = "none"; }, reduce ? 0 : 450);
+        revealAllIfNeeded();
       }
       seal.addEventListener("click", openSeal);
+      openText.addEventListener("click", openSeal);
       go.addEventListener("click", readLetter);
-      if (reduce) readLetter();
+      if (reduce) {
+        openSeal();
+        readLetter();
+      }
+
+      var reveals = document.querySelectorAll("[data-reveal]");
+      var io = null;
+      function revealAllIfNeeded() {
+        if (reduce) {
+          reveals.forEach(function (el) { el.classList.add("is-in"); });
+          return;
+        }
+        if (io) return;
+        io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.18, rootMargin: "0px 0px -10% 0px" });
+        reveals.forEach(function (el, i) {
+          el.style.transitionDelay = (i % 3) * 0.08 + "s";
+          io.observe(el);
+        });
+      }
+
+      var ticking = false;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          mast.classList.toggle("is-stuck", window.scrollY > 8);
+          if (photo && !reduce) {
+            var rect = photo.getBoundingClientRect();
+            var mid = (rect.top + rect.height / 2 - window.innerHeight / 2) * -0.05;
+            photo.style.transform = "translate3d(0," + mid + "px,0)";
+          }
+          ticking = false;
+        });
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
 
       var start = "20270906T130000Z";
       var end = "20270906T213000Z";
@@ -762,13 +937,8 @@
         var want = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4]);
         var guess = want;
         var fmt = new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Europe/Berlin",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23"
+          timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", hourCycle: "h23"
         });
         function shown(ms) {
           var bits = {};
@@ -785,10 +955,7 @@
       var untilNode = document.querySelector("[data-until]");
       function paintUntil() {
         var ms = until - Date.now();
-        if (ms <= 0) {
-          untilNode.textContent = "Der Garten ist geöffnet. Berliner Zeit.";
-          return;
-        }
+        if (ms <= 0) { untilNode.textContent = "Der Garten ist geöffnet. Berliner Zeit."; return; }
         var days = Math.floor(ms / 86400000);
         if (days > 1) untilNode.textContent = "Noch " + days + " Tage, Berliner Zeit.";
         else if (days === 1) untilNode.textContent = "Noch ein Tag, Berliner Zeit.";
@@ -843,15 +1010,16 @@
       }
       function save() {
         var list = answer === "yes" ? people() : [];
-        var payload = {
-          answer: answer,
-          guest: guest.value.trim(),
-          others: [].slice.call(names.querySelectorAll("input")).map(function (input) { return input.value.trim(); }),
-          count: answer === "yes" ? +amountNode.textContent : 0,
-          meal: meal.value.trim(),
-          note: note.value.trim()
-        };
-        try { localStorage.setItem(key, JSON.stringify(payload)); } catch (err) { /* private mode */ }
+        try {
+          localStorage.setItem(key, JSON.stringify({
+            answer: answer,
+            guest: guest.value.trim(),
+            others: [].slice.call(names.querySelectorAll("input")).map(function (input) { return input.value.trim(); }),
+            count: answer === "yes" ? +amountNode.textContent : 0,
+            meal: meal.value.trim(),
+            note: note.value.trim()
+          }));
+        } catch (err) { /* private mode */ }
         result.textContent = line(list);
       }
       function sayYes() {
