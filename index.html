@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amelie und Adrian · 6. September 2027 · Berlin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3efe4;
+      --sheet: #f7f4ec;
+      --ink: #243028;
+      --muted: #5d675f;
+      --line: rgba(36, 48, 40, 0.16);
+      --green: #2c4638;
+      --wax: #7c2832;
+      --wax-deep: #4e1820;
+      --display: Fraunces, Georgia, serif;
+      --ui: Outfit, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html.reduce { scroll-behavior: auto; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--ui);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+    button, input, textarea { font: inherit; color: inherit; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .skip {
+      position: absolute;
+      left: 12px;
+      top: -80px;
+      background: var(--ink);
+      color: var(--sheet);
+      padding: 8px 12px;
+    }
+    .skip:focus { top: 12px; }
+
+    .gate {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px 36px;
+      text-align: center;
+    }
+    .gate-title {
+      margin: 10px 0 28px;
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: clamp(40px, 7vw, 64px);
+      line-height: 1.05;
+    }
+    .place-line {
+      margin: 0;
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 20px;
+    }
+    .scene {
+      width: min(520px, 100%);
+      height: 420px;
+      position: relative;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+    .is-open .place-line,
+    .is-open .gate-title { opacity: 0; }
+    .peek {
+      position: absolute;
+      left: 50%;
+      bottom: 118px;
+      z-index: 1;
+      width: min(340px, 78%);
+      translate: -50% 48px;
+      padding: 22px 18px 28px;
+      background: var(--sheet);
+      border: 1px solid var(--line);
+      text-align: center;
+      transition: translate 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .is-open .peek { z-index: 4; translate: -50% -72px; }
+    .peek strong {
+      display: block;
+      margin-top: 6px;
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: 28px;
+    }
+    .peek span { color: var(--muted); font-size: 14px; }
+    .envelope {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      z-index: 2;
+      width: min(460px, 100%);
+      height: 250px;
+      translate: -50% 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.35), transparent 30%),
+        #e7e1d4;
+      box-shadow: 0 22px 40px rgba(40, 32, 20, 0.12);
+    }
+    .envelope::before, .envelope::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      width: 62%;
+      height: 78%;
+      background: #ddd6c6;
+    }
+    .envelope::before { left: 0; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+    .envelope::after { right: 0; clip-path: polygon(100% 0, 0 100%, 100% 100%); }
+    .flap {
+      position: absolute;
+      z-index: 3;
+      inset: 0 0 auto 0;
+      height: 150px;
+      background: linear-gradient(#f7f3ea, #e4dccb);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: center top;
+      transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .is-open .flap { z-index: 1; transform: rotateX(188deg); }
+    .seal {
+      position: absolute;
+      left: 50%;
+      top: 108px;
+      z-index: 2;
+      translate: -50% 0;
+      width: 92px;
+      height: 92px;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #fff6f4;
+      background:
+        radial-gradient(circle at 32% 30%, rgba(255,255,255,.35), transparent 42%),
+        radial-gradient(circle at 50% 60%, var(--wax), var(--wax-deep));
+      box-shadow: 0 10px 18px rgba(80, 20, 28, 0.28), inset 0 0 0 6px rgba(255,255,255,.12);
+      font-family: var(--display);
+      font-size: 22px;
+      transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.6s ease;
+    }
+    .is-open .seal {
+      transform: translateY(-46px) rotateX(188deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .tap { margin: 22px 0 0; color: var(--muted); }
+    .is-open .tap { opacity: 0; }
+    html.reduce .gate { display: none; }
+
+    .invite { display: none; }
+    .is-open .invite, html.reduce .invite { display: block; }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      padding: 14px 16px;
+      background: rgba(243, 239, 228, 0.94);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav a { text-decoration: none; font-size: 15px; }
+    .wrap { width: min(42rem, calc(100% - 32px)); margin: 0 auto; padding-bottom: 72px; }
+    .hero, .story, .day, .stay, .faq, .rsvp { scroll-margin-top: 72px; }
+    .hero { padding: 56px 0 28px; text-align: center; }
+    .hero h1 {
+      margin: 8px 0;
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: clamp(48px, 9vw, 76px);
+      line-height: 0.95;
+    }
+    .when, .where, .lead { margin: 0; }
+    .where { margin-top: 8px; font-family: var(--display); font-size: 28px; }
+    .lead {
+      max-width: 34rem;
+      margin: 18px auto 0;
+      font-family: var(--display);
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+    .calendar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 22px; }
+    .calendar a, .stop a, .stay a, .save, .choices button {
+      display: inline-block;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      background: transparent;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .save, .choices button.is-on { background: var(--green); color: #f4f7f2; border-color: var(--green); }
+    h2 {
+      margin: 56px 0 12px;
+      font-family: var(--display);
+      font-weight: 500;
+      font-size: 40px;
+      line-height: 1.1;
+    }
+    .story p, .day > p, .stay > p, .faq p, .rsvp > p, .close p {
+      max-width: 38rem;
+      margin: 0 0 12px;
+    }
+    .beats { margin: 18px 0 0; padding: 0; list-style: none; }
+    .beats li { padding: 10px 0; border-top: 1px solid var(--line); }
+    .beats strong { display: block; font-family: var(--display); font-size: 22px; font-weight: 500; }
+    .day ol { margin: 8px 0 0; padding: 0; list-style: none; }
+    .stop { padding: 18px 0 18px 46px; border-top: 1px solid var(--line); position: relative; }
+    .stop::before {
+      content: counter(step);
+      counter-increment: step;
+      position: absolute;
+      left: 0;
+      top: 20px;
+      font-family: var(--display);
+      font-size: 24px;
+    }
+    .day ol { counter-reset: step; }
+    .stop h3 { margin: 0; font-family: var(--display); font-weight: 500; font-size: 28px; }
+    .stop ul { margin: 8px 0; padding: 0; list-style: none; }
+    .stop li { padding: 2px 0; }
+    .stop time { font-variant-numeric: tabular-nums; }
+    .stay article { padding: 16px 0; border-top: 1px solid var(--line); }
+    .stay h3 { margin: 0; font-family: var(--display); font-weight: 500; font-size: 26px; }
+    .faq details { border-top: 1px solid var(--line); }
+    .faq summary { padding: 14px 0; cursor: pointer; font-family: var(--display); font-size: 22px; }
+    .faq details p { margin-top: 0; padding-bottom: 12px; }
+    .choices { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+    .choices button { font-family: var(--display); font-size: 20px; }
+    label { display: block; margin-top: 14px; }
+    input, textarea {
+      width: min(28rem, 100%);
+      margin-top: 6px;
+      padding: 8px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      font-family: var(--display);
+      font-size: 22px;
+    }
+    textarea { font-family: var(--ui); font-size: 16px; min-height: 72px; resize: vertical; }
+    .stepper { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .stepper button { width: 40px; height: 40px; border: 1px solid var(--line); background: transparent; cursor: pointer; }
+    .stepper b { min-width: 1.2rem; font-family: var(--ui); font-size: 20px; font-variant-numeric: lining-nums; }
+    .names input { display: block; }
+    .party[hidden] { display: none; }
+    .result {
+      margin-top: 18px;
+      font-family: var(--display);
+      font-size: 26px;
+      line-height: 1.3;
+    }
+    .fine { color: var(--muted); font-size: 14px; }
+    .close { padding-top: 28px; border-top: 1px solid var(--line); margin-top: 36px; }
+    @media (max-width: 640px) {
+      .hero { padding-top: 40px; }
+      h2 { font-size: 32px; }
+      .scene { height: 300px; }
+    }
+  </style>
+  <script>if (matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("reduce");</script>
+</head>
+<body>
+  <a class="skip" href="#antwort">Zur Antwort</a>
+  <section class="gate" aria-label="Siegel">
+    <p class="place-line">An der Blütenwand</p>
+    <h1 class="gate-title">Ein Brief für euch.</h1>
+    <div class="scene">
+      <div class="peek">
+        <span>Montag, 6. September 2027</span>
+        <strong>Amelie und Adrian</strong>
+      </div>
+      <div class="envelope">
+        <div class="flap"></div>
+        <button class="seal" type="button" aria-expanded="false" aria-label="Öffnet das Siegel">A+A</button>
+      </div>
+    </div>
+    <p class="tap">Tippt auf das Siegel</p>
+  </section>
+
+  <div class="invite" id="invite">
+    <nav class="nav" aria-label="Auf der Einladung">
+      <a href="#tag">Der Tag</a>
+      <a href="#bleiben">Bleiben</a>
+      <a href="#antwort">Antwort</a>
+    </nav>
+    <main class="wrap">
+      <header class="hero" id="anfang">
+        <p class="when">Montag, 6. September 2027<br>15:30 Uhr</p>
+        <h1>Amelie und Adrian</h1>
+        <p class="where">Botanischer Garten, Berlin</p>
+        <p class="lead">Die Blütenwand ist nur der Hintergrund. Ihr seid der Grund.</p>
+        <div class="calendar">
+          <a id="google" href="#">Google-Kalender</a>
+          <a id="ics" href="#">Kalenderdatei laden</a>
+        </div>
+        <p class="fine">Zeiten in Berlin. Die Orte sind ein Beispiel, keine Buchung.</p>
+      </header>
+
+      <section class="story" id="geschichte" aria-labelledby="story-title">
+        <h2 id="story-title">Von der Blütenwand in den Garten</h2>
+        <p>Amelie und Adrian sind an einer Blütenwand stehen geblieben, weil keiner von beiden weiterwollte. Aus dem Nachmittag wurde ein Jahr in derselben Stadt. Am 6. September öffnen sie den Garten.</p>
+        <ul class="beats">
+          <li><strong>Die Blütenwand</strong> Dort sind sie stehen geblieben.</li>
+          <li><strong>Ein Jahr, eine Stadt</strong> Der Weg dazwischen war kurz und dann selbstverständlich.</li>
+          <li><strong>Der Garten</strong> Hier sagt ihr ja, und hier bleibt ihr zum Essen.</li>
+        </ul>
+      </section>
+
+      <section class="day" id="tag" aria-labelledby="day-title">
+        <h2 id="day-title">Der Tag, in dieser Reihenfolge</h2>
+        <p>Von der Trauung bis zum letzten Glas. Alle Zeiten sind Berliner Zeit.</p>
+        <ol>
+          <li class="stop">
+            <h3>Botanischer Garten</h3>
+            <ul>
+              <li><time datetime="2027-09-06T15:00+02:00">15:00</time> Ankommen</li>
+              <li><time datetime="2027-09-06T15:30+02:00">15:30</time> Trauung an der Blütenwand</li>
+            </ul>
+            <p>Königin-Luise-Straße 6–8, 14195 Berlin</p>
+            <a href="https://www.google.com/maps/search/?api=1&query=Botanischer+Garten+Berlin+Königin-Luise-Straße+6-8">Auf der Karte</a>
+          </li>
+          <li class="stop">
+            <h3>Zwischen den Beeten</h3>
+            <ul>
+              <li><time datetime="2027-09-06T16:45+02:00">16:45</time> Ein Glas im Garten</li>
+            </ul>
+            <p>Ihr bleibt im Garten. Flache Schuhe, der Kies ist ehrlich.</p>
+          </li>
+          <li class="stop">
+            <h3>Café Einstein Stammhaus</h3>
+            <ul>
+              <li><time datetime="2027-09-06T19:00+02:00">19:00</time> Essen</li>
+              <li><time datetime="2027-09-06T21:30+02:00">21:30</time> Tanzen, bis die Schuhe egal sind</li>
+            </ul>
+            <p>Kurfürstenstraße 58, 10785 Berlin</p>
+            <a href="https://www.google.com/maps/search/?api=1&query=Café+Einstein+Stammhaus+Kurfürstenstraße+58+Berlin">Auf der Karte</a>
+          </li>
+        </ol>
+      </section>
+
+      <section class="stay" id="bleiben" aria-labelledby="stay-title">
+        <h2 id="stay-title">Wo ihr schlafen könnt</h2>
+        <p>Zwei Häuser zwischen Garten und Abendessen. Wir nehmen keine Buchung entgegen.</p>
+        <article>
+          <h3>Hotel Palace Berlin</h3>
+          <p>Budapester Straße 45, 10787 Berlin. Nah an der Bahn, wenn ihr vom Garten in die Stadt fahrt.</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=Hotel+Palace+Berlin+Budapester+Straße+45">Auf der Karte</a>
+        </article>
+        <article>
+          <h3>Hotel Berlin, Lützowplatz</h3>
+          <p>Lützowplatz 17, 10785 Berlin. Ein kurzer Weg zum Essen.</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=Hotel+Berlin+Lützowplatz+17">Auf der Karte</a>
+        </article>
+      </section>
+
+      <section class="faq" id="vorher" aria-labelledby="faq-title">
+        <h2 id="faq-title">Bevor ihr kommt</h2>
+        <details>
+          <summary>Was zieht ihr an?</summary>
+          <p>Festlich, und eine Schicht für den Abend im Garten. Die Schuhe sollen den Kies können.</p>
+        </details>
+        <details>
+          <summary>Kommen Kinder mit?</summary>
+          <p>Ja, wenn ihr sie mit Namen eintragt. Gezählt wird, wer einen Namen hat.</p>
+        </details>
+        <details>
+          <summary>Wie kommt ihr vom Garten zum Essen?</summary>
+          <p>Mit der S-Bahn von Botanischer Garten Richtung Stadt, dann ein kurzes Stück zu Fuß zur Kurfürstenstraße. Wer lieber zusammen fährt, trifft sich um 18:15 am Garteneingang.</p>
+        </details>
+        <details>
+          <summary>Was schenkt ihr?</summary>
+          <p>Dass ihr da seid, reicht. Wenn ihr mehr geben wollt, freuen wir uns über etwas für den ersten gemeinsamen Tisch. Es gibt hier keine Zahlung.</p>
+        </details>
+      </section>
+
+      <section class="rsvp" id="antwort" aria-labelledby="rsvp-title">
+        <h2 id="rsvp-title">Kommt ihr?</h2>
+        <p>Schreibt, wer kommt. Die Antwort bleibt auf diesem Gerät. Es geht keine E-Mail raus.</p>
+        <label>Euer Name
+          <input id="guest" name="guest" autocomplete="name" maxlength="60" required>
+        </label>
+        <div class="choices">
+          <button type="button" data-answer="yes">Wir kommen</button>
+          <button type="button" data-answer="no">Wir können nicht</button>
+        </div>
+        <div class="party" hidden>
+          <p>Wie viele Personen kommen, euch eingeschlossen?</p>
+          <div class="stepper">
+            <button type="button" data-step="-1" aria-label="Eine Person weniger">−</button>
+            <b data-amount>1</b>
+            <button type="button" data-step="1" aria-label="Eine Person mehr">+</button>
+          </div>
+          <div class="names"></div>
+          <label>Essen, Unverträglichkeiten
+            <textarea id="meal" maxlength="400" placeholder="Name und was die Person braucht"></textarea>
+          </label>
+        </div>
+        <label>Eine Zeile an uns
+          <textarea id="note" maxlength="400"></textarea>
+        </label>
+        <button class="save" type="button">Antwort merken</button>
+        <p class="result" aria-live="polite">Noch keine Antwort.</p>
+        <p class="fine">Namen, Tag und Ort sind ein Beispiel.</p>
+      </section>
+
+      <footer class="close">
+        <p>Bis zum 6. September im Garten.</p>
+        <p class="fine">Amelie und Adrian · Berlin</p>
+      </footer>
+    </main>
+  </div>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var seal = document.querySelector(".seal");
+      var invite = document.getElementById("invite");
+      var reduce = root.classList.contains("reduce");
+      var key = "feierlink-rsvp:/amelie-adrian-brief/";
+
+      function openInvite() {
+        if (root.classList.contains("is-open")) return;
+        root.classList.add("is-open");
+        seal.setAttribute("aria-expanded", "true");
+        invite.hidden = false;
+      }
+      seal.addEventListener("click", openInvite);
+      if (reduce) openInvite();
+
+      var start = "20270906T130000Z";
+      var end = "20270906T213000Z";
+      var title = "Amelie und Adrian";
+      var loc = "Botanischer Garten Berlin, Königin-Luise-Straße 6-8, 14195 Berlin";
+      var details = "Beispiel. Trauung 15:30 Uhr Berliner Zeit.";
+      document.getElementById("google").href =
+        "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" +
+        encodeURIComponent(title) + "&dates=" + start + "/" + end +
+        "&details=" + encodeURIComponent(details) +
+        "&location=" + encodeURIComponent(loc) + "&ctz=Europe/Berlin";
+      var ics = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//FeierLink//Amelie Adrian//DE",
+        "BEGIN:VEVENT", "DTSTART:" + start, "DTEND:" + end,
+        "SUMMARY:" + title, "LOCATION:" + loc, "DESCRIPTION:" + details,
+        "END:VEVENT", "END:VCALENDAR"
+      ].join("\r\n");
+      document.getElementById("ics").href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+      document.getElementById("ics").setAttribute("download", "amelie-adrian.ics");
+
+      var guest = document.getElementById("guest");
+      var meal = document.getElementById("meal");
+      var note = document.getElementById("note");
+      var party = document.querySelector(".party");
+      var names = document.querySelector(".names");
+      var amountNode = document.querySelector("[data-amount]");
+      var result = document.querySelector(".result");
+      var yes = document.querySelector('[data-answer="yes"]');
+      var no = document.querySelector('[data-answer="no"]');
+      var answer = "";
+
+      function extraFields(n, saved) {
+        var current = [].slice.call(names.querySelectorAll("input")).map(function (input) { return input.value; });
+        names.innerHTML = "";
+        var i;
+        for (i = 0; i < n - 1; i++) {
+          var input = document.createElement("input");
+          input.maxLength = 60;
+          input.placeholder = "Name";
+          input.setAttribute("aria-label", "Weitere Person " + (i + 1));
+          input.value = (saved && saved[i]) || current[i] || "";
+          names.appendChild(input);
+        }
+        amountNode.textContent = String(n);
+      }
+      function people() {
+        var list = [];
+        var mine = guest.value.trim();
+        if (mine) list.push(mine);
+        [].slice.call(names.querySelectorAll("input")).forEach(function (input) {
+          if (input.value.trim()) list.push(input.value.trim());
+        });
+        return list;
+      }
+      function line(list) {
+        if (answer === "no") return "Ihr habt abgesagt. Es kommen 0 Personen.";
+        if (answer !== "yes") return "Noch keine Antwort.";
+        if (!list.length) return "Tippt die Namen. Gezählt wird, wer einen Namen hat.";
+        if (list.length === 1) return "Es kommt 1 Person: " + list[0] + ".";
+        return "Es kommen " + list.length + " Personen: " + list.slice(0, -1).join(", ") + " und " + list[list.length - 1] + ".";
+      }
+      function save() {
+        var list = answer === "yes" ? people() : [];
+        var payload = {
+          answer: answer,
+          guest: guest.value.trim(),
+          others: [].slice.call(names.querySelectorAll("input")).map(function (input) { return input.value.trim(); }),
+          count: answer === "yes" ? +amountNode.textContent : 0,
+          meal: meal.value.trim(),
+          note: note.value.trim()
+        };
+        try { localStorage.setItem(key, JSON.stringify(payload)); } catch (err) { /* private mode */ }
+        result.textContent = line(list);
+      }
+      yes.addEventListener("click", function () {
+        answer = "yes";
+        yes.classList.add("is-on");
+        no.classList.remove("is-on");
+        party.hidden = false;
+        if (+amountNode.textContent < 1) extraFields(1);
+        save();
+      });
+      no.addEventListener("click", function () {
+        answer = "no";
+        no.classList.add("is-on");
+        yes.classList.remove("is-on");
+        party.hidden = true;
+        save();
+      });
+      document.querySelectorAll("[data-step]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var n = +amountNode.textContent + +button.getAttribute("data-step");
+          if (n < 1 || n > 8) return;
+          extraFields(n);
+          answer = "yes";
+          yes.classList.add("is-on");
+          no.classList.remove("is-on");
+          party.hidden = false;
+          save();
+        });
+      });
+      document.querySelector(".save").addEventListener("click", save);
+      guest.addEventListener("input", function () { if (answer) save(); });
+      names.addEventListener("input", function () { if (answer === "yes") save(); });
+
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(key) || "null"); } catch (err) { saved = null; }
+      if (saved) {
+        guest.value = saved.guest || "";
+        meal.value = saved.meal || "";
+        note.value = saved.note || "";
+        extraFields(Math.min(8, Math.max(1, saved.count || 1)), saved.others || []);
+        if (saved.answer === "yes") yes.click();
+        else if (saved.answer === "no") no.click();
+      } else {
+        extraFields(1);
+      }
+    })();
+  </script>
+</body>
+</html>
